@@ -1,0 +1,18 @@
+<Project>
+    <PropertyGroup>
+        <Title>SvgIconGenerator</Title>
+        <Product>SvgIconGenerator</Product>
+        <Description>SVG icon source generator</Description>
+        <Authors>Matt Schneeberger</Authors>
+        <Version>0.0.0-dev</Version>
+        <PackageTags>svg;icons;sourcegenerator;roslyn</PackageTags>
+        <RepositoryUrl>https://github.com/helluvamatt/SvgIconGenerator</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+</Project>
