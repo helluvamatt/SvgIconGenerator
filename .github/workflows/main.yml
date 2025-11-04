@@ -36,7 +36,7 @@ jobs:
       - name: Build
         run: |
           dotnet build --no-restore --configuration ${{ env.CONFIGURATION }} -p:Version="${{ env.VERSION }}" -p:PackageVersion="${{ env.VERSION }}" src/SvgIconGenerator/SvgIconGenerator.csproj
-          dotnet build --no-restore --configuration ${{ env.CONFIGURATION }} -p:Version="${{ env.VERSION }}" -p:PackageVersion="${{ env.VERSION }}" tests/SvgIconGenerator.Tests/LSvgIconGenerator.Tests.csproj
+          dotnet build --no-restore --configuration ${{ env.CONFIGURATION }} -p:Version="${{ env.VERSION }}" -p:PackageVersion="${{ env.VERSION }}" tests/SvgIconGenerator.Tests/SvgIconGenerator.Tests.csproj
       - name: Run Tests
         run: dotnet test --no-build --logger "trx;logfilename=SvgIconGenerator.Tests.trx" tests/SvgIconGenerator.Tests/SvgIconGenerator.Tests.csproj
       - name: Report Test Results
