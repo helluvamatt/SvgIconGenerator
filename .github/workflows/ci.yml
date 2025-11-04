@@ -1,0 +1,37 @@
+name: Pull Request CI and Tests
+
+on:
+  pull_request:
+
+env:
+  CONFIGURATION: Debug
+  VERSION: 0.0.0-pr-${{ github.pull_request.number }}
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore .NET dependencies
+        run: dotnet restore
+      - name: Build
+        run: |
+          dotnet build --no-restore --configuration ${{ env.CONFIGURATION }} -p:Version="${{ env.VERSION }}" -p:PackageVersion="${{ env.VERSION }}" src/SvgIconGenerator/SvgIconGenerator.csproj
+          dotnet build --no-restore --configuration ${{ env.CONFIGURATION }} -p:Version="${{ env.VERSION }}" -p:PackageVersion="${{ env.VERSION }}" tests/SvgIconGenerator.Tests/SvgIconGenerator.Tests.csproj
+      - name: Run Tests
+        run: dotnet test --no-build --logger "trx;logfilename=SvgIconGenerator.Tests.trx" tests/SvgIconGenerator.Tests/SvgIconGenerator.Tests.csproj
+      - name: Report Test Results
+        uses: dorny/test-reporter@v2
+        if: ${{ success() || failure() }}
+        with:
+          name: Tests
+          path: 'tests/SvgIconGenerator.Tests/TestResults/*.trx'
+          reporter: dotnet-trx

@@ -1,0 +1,57 @@
+name: Github Packages Publish
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      checks: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Variables
+        id: vars
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
+          echo "CONFIGURATION=`[[ ${GITHUB_REF#refs/*/v*-} == ${GITHUB_REF} ]] && echo 'Release' || echo 'Debug'`" >> $GITHUB_ENV
+        shell: bash
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@v1
+        id: nuget_login
+        with:
+          user: helluvamatt
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore .NET dependencies
+        run: dotnet restore
+      - name: Build
+        run: |
+          dotnet build --no-restore --configuration ${{ env.CONFIGURATION }} -p:Version="${{ env.VERSION }}" -p:PackageVersion="${{ env.VERSION }}" src/SvgIconGenerator/SvgIconGenerator.csproj
+          dotnet build --no-restore --configuration ${{ env.CONFIGURATION }} -p:Version="${{ env.VERSION }}" -p:PackageVersion="${{ env.VERSION }}" tests/SvgIconGenerator.Tests/LSvgIconGenerator.Tests.csproj
+      - name: Run Tests
+        run: dotnet test --no-build --logger "trx;logfilename=SvgIconGenerator.Tests.trx" tests/SvgIconGenerator.Tests/SvgIconGenerator.Tests.csproj
+      - name: Report Test Results
+        uses: dorny/test-reporter@v2
+        if: ${{ success() || failure() }}
+        with:
+          name: Tests
+          path: 'tests/SvgIconGenerator.Tests/TestResults/*.trx'
+          reporter: dotnet-trx
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          make_latest: true
+          files: |
+            src/SvgIconGenerator/bin/${{ env.CONFIGURATION }}/SvgIconGenerator.${{ env.VERSION }}.nupkg
+      - name: Publish NuGet packages
+        run: |
+          dotnet nuget push src/SvgIconGenerator/bin/${{ env.CONFIGURATION }}/SvgIconGenerator.${{ env.VERSION }}.nupkg -k ${{steps.nuget_login.outputs.NUGET_API_KEY}} -s "https://api.nuget.org/v3/index.json"
