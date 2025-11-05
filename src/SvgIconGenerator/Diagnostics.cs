@@ -14,16 +14,8 @@ internal static class Diagnostics
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
-    public static readonly DiagnosticDescriptor ErrorGeneratingIcons = new(
-        "ICON002",
-        "Error generating icons",
-        "Error generating icons for {0}: {1}",
-        "IconGenerator",
-        DiagnosticSeverity.Error,
-        isEnabledByDefault: true);
-
     public static readonly DiagnosticDescriptor SvgParseError = new(
-        "ICON003",
+        "ICON002",
         "Error parsing SVG",
         "Error parsing SVG file {0}: {1}",
         "IconGenerator",

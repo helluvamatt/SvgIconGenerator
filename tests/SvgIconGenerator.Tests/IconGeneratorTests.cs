@@ -50,6 +50,7 @@ public class IconGeneratorTests
         // Assert
         using (Assert.EnterMultipleScope())
         {
+            Assert.That(result.Diagnostics, Is.Empty);
             Assert.That(result.GeneratedSources, Has.Count.GreaterThan(0));
 
             string generatedCode = string.Join("\n", result.GeneratedSources);

@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace SvgIconGenerator;
 
@@ -16,6 +17,9 @@ public class IconGenerator : IIncrementalGenerator
             ctx.AddSource(InjectedSource.IconDto.Hint, InjectedSource.IconDto.Source);
         });
 
+        // Get compilation options to access MSBuild properties
+        IncrementalValueProvider<AnalyzerConfigOptionsProvider> configOptions = context.AnalyzerConfigOptionsProvider;
+
         // Get all additional files (SVG files should be added via <AdditionalFiles Include="..." />)
         IncrementalValuesProvider<AdditionalText> svgFiles = context.AdditionalTextsProvider
             .Where(static file => file.Path.EndsWith(".svg", StringComparison.OrdinalIgnoreCase));
@@ -27,9 +31,12 @@ public class IconGenerator : IIncrementalGenerator
                 predicate: static (s, _) => IsCandidateClass(s),
                 transform: static (ctx, _) => new ClassInfo(ctx.TargetSymbol, ctx.TargetNode.GetLocation(), ctx.Attributes));
 
-        // Generate icon classes
-        IncrementalValueProvider<(ImmutableArray<AdditionalText> Left, ImmutableArray<ClassInfo> Right)> combined = svgFiles.Collect().Combine(classDeclarations.Collect());
-        context.RegisterSourceOutput(combined, static (spc, source) => IconEmitter.Execute(source.Left, source.Right, spc));
+        // Combine additional files and class declarations to produce the final output
+        IncrementalValueProvider<(ImmutableArray<AdditionalText> Left, ImmutableArray<ClassInfo> Right)> sources = svgFiles.Collect().Combine(classDeclarations.Collect());
+
+        // Combine with configuration and generate icon classes
+        IncrementalValueProvider<(AnalyzerConfigOptionsProvider Left, (ImmutableArray<AdditionalText> Left, ImmutableArray<ClassInfo> Right) Right)> combined = configOptions.Combine(sources);
+        context.RegisterSourceOutput(combined, static (spc, source) => IconEmitter.Execute(source.Left, source.Right.Left, source.Right.Right, spc));
     }
 
     private static bool IsCandidateClass(SyntaxNode node)

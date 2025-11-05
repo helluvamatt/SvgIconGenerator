@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
 namespace SvgIconGenerator;
@@ -18,38 +19,34 @@ internal static class IconEmitter
         //------------------------------------------------------------------------------
         """;
 
-    public static void Execute(ImmutableArray<AdditionalText> svgFiles, ImmutableArray<ClassInfo> classes, SourceProductionContext context)
+    public static void Execute(AnalyzerConfigOptionsProvider configOptions, ImmutableArray<AdditionalText> svgFiles, ImmutableArray<ClassInfo> classes, SourceProductionContext context)
     {
         if (classes.IsDefaultOrEmpty)
             return;
 
+        // Get project directory from analyzer config options
+        string? projectDirectory = configOptions.GlobalOptions.TryGetValue("build_property.MSBuildProjectDirectory", out string? dir) ? dir : null;
+
         foreach (ClassInfo classInfo in classes)
         {
-            try
+            // Find glob pattern from attribute
+            string? globPattern = default;
+            foreach (AttributeData? attribute in classInfo.Attributes)
             {
-                // Find glob pattern from attribute
-                string? globPattern = default;
-                foreach (AttributeData? attribute in classInfo.Attributes)
-                {
-                    if (attribute.ConstructorArguments.FirstOrDefault().Value is not string pattern) continue;
-                    globPattern = pattern;
-                }
-
-                List<IconInfo> icons = SvgUtils.LoadIcons(context, svgFiles, globPattern);
-
-                if (icons.Count == 0)
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.NoIconsFound, classInfo.Location, globPattern ?? "all SVG files"));
-                    continue;
-                }
-
-                SourceText source = GenerateIconClass(classInfo, icons);
-                context.AddSource($"{classInfo.TargetSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}.g.cs", source);
+                if (attribute.ConstructorArguments.FirstOrDefault().Value is not string pattern) continue;
+                globPattern = pattern;
             }
-            catch (Exception ex)
+
+            List<IconInfo> icons = SvgUtils.LoadIcons(context, svgFiles, globPattern, projectDirectory);
+
+            if (icons.Count == 0)
             {
-                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.ErrorGeneratingIcons, classInfo.Location, classInfo.TargetSymbol.Name, ex.Message));
+                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.NoIconsFound, classInfo.Location, globPattern ?? "all SVG files"));
+                continue;
             }
+
+            SourceText source = GenerateIconClass(classInfo, icons);
+            context.AddSource($"{classInfo.TargetSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}.g.cs", source);
         }
     }
 

@@ -1,7 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
 
 namespace SvgIconGenerator.Tests.TestHelpers;
@@ -58,7 +57,7 @@ public static class GeneratorTestHelper
         CSharpGeneratorDriver driver = CSharpGeneratorDriver.Create(
             generators: [generator.AsSourceGenerator()],
             optionsProvider: analyzerConfigOptionsProvider,
-            additionalTexts: additionalFiles.ToImmutableArray<AdditionalText>());
+            additionalTexts: [.. additionalFiles]);
 
         driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(compilation, out Compilation outputCompilation, out ImmutableArray<Diagnostic> diagnostics);
 
@@ -94,24 +93,6 @@ public static class GeneratorTestHelper
             return options.TryGetValue(key, out value!);
         }
     }
-}
-
-/// <summary>
-/// Test implementation of AdditionalText for unit testing.
-/// </summary>
-public sealed class TestAdditionalText : AdditionalText
-{
-    private readonly SourceText sourceText;
-
-    public TestAdditionalText(string path, string text)
-    {
-        Path = path;
-        sourceText = SourceText.From(text);
-    }
-
-    public override string Path { get; }
-
-    public override SourceText GetText(CancellationToken cancellationToken = default) => sourceText;
 }
 
 /// <summary>
