@@ -237,6 +237,47 @@ public class SnapshotTests
         }
     }
 
+    [Test]
+    public void GeneratedCode_InnerContent_DoesNotContainRedundantXmlns()
+    {
+        // Arrange
+        string iconsFolder = Path.Combine(testDirectory, "icons");
+        Directory.CreateDirectory(iconsFolder);
+        File.WriteAllText(Path.Combine(iconsFolder, "test.svg"), TestSvgFiles.ComplexIcon);
+
+        const string sourceCode =
+            """
+            using SvgIconGenerator;
+
+            namespace TestNamespace;
+
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
+
+        // Act
+        GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Diagnostics, Is.Empty, "Expected no diagnostics from the generator.");
+
+            string? generatedCode = result.GeneratedSources
+                .FirstOrDefault(s => s.Contains("partial class Icons", StringComparison.Ordinal));
+            Assert.That(generatedCode, Is.Not.Null);
+
+            // Extract the InnerContent section
+            string innerContentSection = ExtractInnerContentSection(generatedCode!);
+
+            // The InnerContent should NOT contain xmlns="http://www.w3.org/2000/svg" on child elements
+            // This is a redundant attribute that gets added by XML serialization
+            Assert.That(innerContentSection, Does.Not.Contain("xmlns=\\\"http://www.w3.org/2000/svg\\\""), "InnerContent should not contain redundant xmlns attributes on child elements.");
+        }
+    }
+
     private static string ExtractDefaultAttributesSection(string generatedCode)
     {
         string[] lines = generatedCode.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -248,5 +289,18 @@ public class SnapshotTests
         if (endLine == -1) throw new InvalidOperationException("Could not find the end of DefaultAttributes section.");
 
         return string.Join('\n', lines[startLine..endLine]);
+    }
+
+    private static string ExtractInnerContentSection(string generatedCode)
+    {
+        // Split the generated code into lines
+        string[] lines = generatedCode.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        // Find the line that ends with ');', there should be exactly one
+        string[] innerContentLines = [..lines.Where(line => line.EndsWith(");", StringComparison.Ordinal))];
+        if (innerContentLines.Length < 1) throw new InvalidOperationException("Expected at least one line ending with ');'.");
+
+        // Remove the trailing ');'
+        return innerContentLines[0][..^2].Trim();
     }
 }

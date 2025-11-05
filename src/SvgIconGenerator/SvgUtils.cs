@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Xml;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -37,10 +36,8 @@ internal static class SvgUtils
                     .Where(a => a.Name.LocalName is not "xmlns" and not "class")
                     .ToDictionary(a => a.Name.LocalName, a => a.Value);
 
-                // Get inner XML content
-                using XmlReader reader = svgElement.CreateReader();
-                reader.MoveToContent();
-                string innerContent = reader.ReadInnerXml();
+                // Get inner XML content without redundant xmlns attributes
+                string innerContent = svgElement.GetInnerXml();
 
                 icons.Add(new IconInfo(
                     propertyName,
