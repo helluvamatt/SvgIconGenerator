@@ -18,44 +18,28 @@ internal static class IconEmitter
         //------------------------------------------------------------------------------
         """;
 
-    public static void Execute(string? projectDir, ImmutableArray<ClassInfo> classes, SourceProductionContext context)
+    public static void Execute(ImmutableArray<AdditionalText> svgFiles, ImmutableArray<ClassInfo> classes, SourceProductionContext context)
     {
         if (classes.IsDefaultOrEmpty)
             return;
-
-        if (string.IsNullOrEmpty(projectDir))
-        {
-            context.ReportDiagnostic(Diagnostic.Create(Diagnostics.MissingProjectDirectory, Location.None));
-            return;
-        }
 
         foreach (ClassInfo classInfo in classes)
         {
             try
             {
-                // Find icon folder path
-                string? relativeIconFolderPath = default;
+                // Find glob pattern from attribute
+                string? globPattern = default;
                 foreach (AttributeData? attribute in classInfo.Attributes)
                 {
-                    if (attribute.ConstructorArguments.FirstOrDefault().Value is not string folderPath) continue;
-                    relativeIconFolderPath = folderPath;
+                    if (attribute.ConstructorArguments.FirstOrDefault().Value is not string pattern) continue;
+                    globPattern = pattern;
                 }
-                if (string.IsNullOrEmpty(relativeIconFolderPath))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.MissingIconDirectory, classInfo.Location, classInfo.TargetSymbol.Name));
-                    continue;
-                }
-                string iconFolderPath = Path.Combine(projectDir, relativeIconFolderPath);
-                if (!Directory.Exists(iconFolderPath))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.MissingIconDirectory, classInfo.Location, iconFolderPath));
-                    continue;
-                }
-                List<IconInfo> icons = SvgUtils.LoadIcons(context, iconFolderPath);
+
+                List<IconInfo> icons = SvgUtils.LoadIcons(context, svgFiles, globPattern);
 
                 if (icons.Count == 0)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.NoIconsFound, classInfo.Location, iconFolderPath));
+                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.NoIconsFound, classInfo.Location, globPattern ?? "all SVG files"));
                     continue;
                 }
 

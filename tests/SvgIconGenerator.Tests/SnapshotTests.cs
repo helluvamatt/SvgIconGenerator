@@ -33,16 +33,16 @@ public class SnapshotTests
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -74,16 +74,16 @@ public class SnapshotTests
         File.WriteAllText(Path.Combine(iconsFolder, "icon-settings.svg"), TestSvgFiles.ComplexIcon);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace MyApp.Icons;
+            namespace MyApp.Icons;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class AppIcons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class AppIcons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -126,16 +126,16 @@ public class SnapshotTests
         File.WriteAllText(Path.Combine(iconsFolder, "test.svg"), svgWithQuotes);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -159,16 +159,16 @@ public class SnapshotTests
         File.WriteAllText(Path.Combine(iconsFolder, "arrow-down-0-1.svg"), TestSvgFiles.SimpleIcon);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -191,16 +191,16 @@ public class SnapshotTests
         File.WriteAllText(Path.Combine(iconsFolder, "test.svg"), TestSvgFiles.IconWithClassAttribute);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);

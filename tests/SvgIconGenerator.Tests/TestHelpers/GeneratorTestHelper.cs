@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
 
 namespace SvgIconGenerator.Tests.TestHelpers;
@@ -14,6 +15,28 @@ public static class GeneratorTestHelper
     /// Runs the IconGenerator on the provided source code and returns the generated output and diagnostics.
     /// </summary>
     public static GeneratorTestResult RunGenerator(string sourceCode, string projectDirectory)
+    {
+        // Auto-discover SVG files in the icons directory
+        string iconsFolder = Path.Combine(projectDirectory, "icons");
+        List<TestAdditionalText> additionalFiles = [];
+
+        if (Directory.Exists(iconsFolder))
+        {
+            string[] svgFiles = Directory.GetFiles(iconsFolder, "*.svg", SearchOption.AllDirectories);
+            foreach (string svgFile in svgFiles)
+            {
+                string content = File.ReadAllText(svgFile);
+                additionalFiles.Add(new TestAdditionalText(svgFile, content));
+            }
+        }
+
+        return RunGenerator(sourceCode, projectDirectory, additionalFiles);
+    }
+
+    /// <summary>
+    /// Runs the IconGenerator on the provided source code with explicit additional files.
+    /// </summary>
+    public static GeneratorTestResult RunGenerator(string sourceCode, string projectDirectory, IEnumerable<TestAdditionalText> additionalFiles)
     {
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
         List<MetadataReference> references = [
@@ -34,7 +57,8 @@ public static class GeneratorTestHelper
         IconGenerator generator = new();
         CSharpGeneratorDriver driver = CSharpGeneratorDriver.Create(
             generators: [generator.AsSourceGenerator()],
-            optionsProvider: analyzerConfigOptionsProvider);
+            optionsProvider: analyzerConfigOptionsProvider,
+            additionalTexts: additionalFiles.ToImmutableArray<AdditionalText>());
 
         driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(compilation, out Compilation outputCompilation, out ImmutableArray<Diagnostic> diagnostics);
 
@@ -70,6 +94,24 @@ public static class GeneratorTestHelper
             return options.TryGetValue(key, out value!);
         }
     }
+}
+
+/// <summary>
+/// Test implementation of AdditionalText for unit testing.
+/// </summary>
+public sealed class TestAdditionalText : AdditionalText
+{
+    private readonly SourceText sourceText;
+
+    public TestAdditionalText(string path, string text)
+    {
+        Path = path;
+        sourceText = SourceText.From(text);
+    }
+
+    public override string Path { get; }
+
+    public override SourceText? GetText(CancellationToken cancellationToken = default) => sourceText;
 }
 
 /// <summary>

@@ -25,16 +25,40 @@ YourProject/
 └── Program.cs
 ```
 
-### 2. Create an Icon Class
+### 2. Add SVG Files as AdditionalFiles
 
-Create a `static partial` class and decorate it with the `[GenerateIcons]` attribute, specifying the path to your icons folder:
+In your `.csproj` file, add the SVG files as `AdditionalFiles`:
+
+```xml
+<ItemGroup>
+  <AdditionalFiles Include="Icons/*.svg" />
+</ItemGroup>
+```
+
+**Important**: Adding files as `AdditionalFiles` ensures that changes to SVG files trigger regeneration during incremental compilation.
+
+### 3. Create an Icon Class
+
+Create a `static partial` class and decorate it with the `[GenerateIcons]` attribute:
 
 ```csharp
-[GenerateIcons("Icons")]
+[GenerateIcons]
 internal static partial class MyIcons;
 ```
 
-### 3. Access Generated Icons
+You can optionally specify a glob pattern to filter which SVG files to include:
+
+```csharp
+// Include all SVG files from AdditionalFiles
+[GenerateIcons]
+internal static partial class AllIcons;
+
+// Filter by glob pattern
+[GenerateIcons("Icons/*.svg")]
+internal static partial class MyIcons;
+```
+
+### 4. Access Generated Icons
 
 The source generator will create properties for each SVG file. Property names are automatically converted from kebab-case to PascalCase:
 
@@ -47,7 +71,7 @@ Console.WriteLine($"ViewBox: {icon.DefaultAttributes["viewBox"]}");
 Console.WriteLine($"SVG content: {icon.InnerContent}");
 ```
 
-### 4. Render Icons
+### 5. Render Icons
 
 The `IconDto` contains everything needed to render the icon:
 
@@ -92,14 +116,22 @@ You can use this generator with popular icon libraries installed via NPM, such a
 npm install lucide-static
 ```
 
-2. Point the generator to the node_modules folder:
+2. Add the icons as `AdditionalFiles` in your `.csproj`:
+
+```xml
+<ItemGroup>
+  <AdditionalFiles Include="node_modules/lucide-static/icons/*.svg" />
+</ItemGroup>
+```
+
+3. Create the icon class with optional glob pattern filter:
 
 ```csharp
-[GenerateIcons("node_modules/lucide-static/icons")]
+[GenerateIcons("node_modules/lucide-static/icons/*.svg")]
 internal static partial class LucideIcons;
 ```
 
-3. Access any Lucide icon:
+4. Access any Lucide icon:
 
 ```csharp
 IconDto icon = LucideIcons.UserCircle;
@@ -113,8 +145,14 @@ IconDto icon3 = LucideIcons.AlertTriangle;
 npm install bootstrap-icons
 ```
 
+```xml
+<ItemGroup>
+  <AdditionalFiles Include="node_modules/bootstrap-icons/icons/*.svg" />
+</ItemGroup>
+```
+
 ```csharp
-[GenerateIcons("node_modules/bootstrap-icons/icons")]
+[GenerateIcons("node_modules/bootstrap-icons/icons/*.svg")]
 internal static partial class BootstrapIcons;
 ```
 
@@ -124,13 +162,20 @@ internal static partial class BootstrapIcons;
 npm install heroicons
 ```
 
+```xml
+<ItemGroup>
+  <AdditionalFiles Include="node_modules/heroicons/24/outline/*.svg" />
+  <AdditionalFiles Include="node_modules/heroicons/24/solid/*.svg" />
+</ItemGroup>
+```
+
 ```csharp
 // Outline style icons
-[GenerateIcons("node_modules/heroicons/24/outline")]
+[GenerateIcons("node_modules/heroicons/24/outline/*.svg")]
 internal static partial class HeroiconsOutline;
 
 // Solid style icons
-[GenerateIcons("node_modules/heroicons/24/solid")]
+[GenerateIcons("node_modules/heroicons/24/solid/*.svg")]
 internal static partial class HeroiconsSolid;
 ```
 
@@ -138,25 +183,35 @@ internal static partial class HeroiconsSolid;
 
 You can create multiple icon classes in the same project to organize different icon sets:
 
+```xml
+<ItemGroup>
+  <AdditionalFiles Include="node_modules/lucide-static/icons/*.svg" />
+  <AdditionalFiles Include="Icons/custom/*.svg" />
+  <AdditionalFiles Include="Icons/logos/*.svg" />
+</ItemGroup>
+```
+
 ```csharp
-[GenerateIcons("node_modules/lucide-static/icons")]
+[GenerateIcons("node_modules/lucide-static/icons/*.svg")]
 internal static partial class LucideIcons;
 
-[GenerateIcons("Icons/custom")]
+[GenerateIcons("Icons/custom/*.svg")]
 internal static partial class CustomIcons;
 
-[GenerateIcons("Icons/logos")]
+[GenerateIcons("Icons/logos/*.svg")]
 internal static partial class LogoIcons;
 ```
 
 ## How It Works
 
-1. The source generator scans the specified folder for `*.svg` files
-2. For each SVG file, it:
+1. The source generator reads SVG files from `AdditionalFiles` in your project
+2. Files are optionally filtered by glob pattern (if specified in the attribute)
+3. For each SVG file, it:
     - Extracts the root element's attributes (excluding `xmlns` and `class`)
     - Captures the inner SVG content
     - Converts the filename to PascalCase for the property name
-3. Generates a partial class with `IconDto` properties for each icon
+4. Generates a partial class with `IconDto` properties for each icon
+5. **Incremental compilation**: Changes to SVG files automatically trigger regeneration
 
 ## IconDto Structure
 

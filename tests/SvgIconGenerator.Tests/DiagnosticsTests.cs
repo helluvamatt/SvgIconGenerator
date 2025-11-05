@@ -27,23 +27,23 @@ public class DiagnosticsTests
     }
 
     [Test]
-    public void ICON003_NoSvgFiles_ReportsWarning()
+    public void ICON001_NoSvgFiles_ReportsWarning()
     {
         // Arrange
         string emptyIconsFolder = Path.Combine(testDirectory, "empty-icons");
         Directory.CreateDirectory(emptyIconsFolder);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{emptyIconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -52,30 +52,29 @@ public class DiagnosticsTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
-            Assert.That(result.Diagnostics[0].Id, Is.EqualTo("ICON003"));
+            Assert.That(result.Diagnostics[0].Id, Is.EqualTo("ICON001"));
             Assert.That(result.Diagnostics[0].Severity, Is.EqualTo(DiagnosticSeverity.Warning));
             Assert.That(result.Diagnostics[0].GetMessage(CultureInfo.InvariantCulture), Does.Contain("No SVG files found"));
-            Assert.That(result.Diagnostics[0].GetMessage(CultureInfo.InvariantCulture), Does.Contain(emptyIconsFolder));
         }
     }
 
     [Test]
-    public void ICON002_NonExistentFolder_ReportsWarning()
+    public void ICON001_NonExistentFolder_ReportsWarning()
     {
         // Arrange
         string nonExistentFolder = Path.Combine(testDirectory, "does-not-exist");
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{nonExistentFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -84,13 +83,13 @@ public class DiagnosticsTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
-            Assert.That(result.Diagnostics[0].Id, Is.EqualTo("ICON002"));
+            Assert.That(result.Diagnostics[0].Id, Is.EqualTo("ICON001"));
             Assert.That(result.Diagnostics[0].Severity, Is.EqualTo(DiagnosticSeverity.Warning));
         }
     }
 
     [Test]
-    public void ICON005_InvalidSvgFile_ReportsWarning()
+    public void ICON003_InvalidSvgFile_ReportsWarning()
     {
         // Arrange
         string iconsFolder = Path.Combine(testDirectory, "icons");
@@ -98,16 +97,16 @@ public class DiagnosticsTests
         File.WriteAllText(Path.Combine(iconsFolder, "invalid.svg"), TestSvgFiles.InvalidSvg);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -116,12 +115,12 @@ public class DiagnosticsTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Diagnostics, Has.Count.GreaterThanOrEqualTo(1));
-            Assert.That(result.Diagnostics, Has.Some.Matches<Diagnostic>(d => d.Id == "ICON005" && d.GetMessage(CultureInfo.InvariantCulture).Contains("invalid.svg", StringComparison.Ordinal)));
+            Assert.That(result.Diagnostics, Has.Some.Matches<Diagnostic>(d => d.Id == "ICON003" && d.GetMessage(CultureInfo.InvariantCulture).Contains("invalid.svg", StringComparison.Ordinal)));
         }
     }
 
     [Test]
-    public void ICON005_PartiallyInvalidFiles_GeneratesValidOnesAndReportsErrors()
+    public void ICON003_PartiallyInvalidFiles_GeneratesValidOnesAndReportsErrors()
     {
         // Arrange
         string iconsFolder = Path.Combine(testDirectory, "icons");
@@ -130,23 +129,23 @@ public class DiagnosticsTests
         File.WriteAllText(Path.Combine(iconsFolder, "invalid.svg"), TestSvgFiles.InvalidSvg);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
 
         // Assert
         Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
-        Assert.That(result.Diagnostics[0].Id, Is.EqualTo("ICON005"));
+        Assert.That(result.Diagnostics[0].Id, Is.EqualTo("ICON003"));
 
         // Valid icon should still be generated
         string? generatedCode = result.GeneratedSources
@@ -165,16 +164,16 @@ public class DiagnosticsTests
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -184,7 +183,7 @@ public class DiagnosticsTests
     }
 
     [Test]
-    public void ICON005_CorruptedSvgContent_ReportsWarning()
+    public void ICON003_CorruptedSvgContent_ReportsWarning()
     {
         // Arrange
         string iconsFolder = Path.Combine(testDirectory, "icons");
@@ -192,16 +191,16 @@ public class DiagnosticsTests
         File.WriteAllText(Path.Combine(iconsFolder, "corrupted.svg"), "This is not valid XML at all!");
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -210,12 +209,12 @@ public class DiagnosticsTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Diagnostics, Has.Count.GreaterThanOrEqualTo(1));
-            Assert.That(result.Diagnostics, Has.Some.Matches<Diagnostic>(d => d.Id == "ICON005" && d.GetMessage(CultureInfo.InvariantCulture).Contains("corrupted.svg", StringComparison.Ordinal)));
+            Assert.That(result.Diagnostics, Has.Some.Matches<Diagnostic>(d => d.Id == "ICON003" && d.GetMessage(CultureInfo.InvariantCulture).Contains("corrupted.svg", StringComparison.Ordinal)));
         }
     }
 
     [Test]
-    public void ICON005_FolderWithOnlyNonSvgFiles_ReportsWarning()
+    public void ICON001_FolderWithOnlyNonSvgFiles_ReportsWarning()
     {
         // Arrange
         string iconsFolder = Path.Combine(testDirectory, "icons");
@@ -224,16 +223,16 @@ public class DiagnosticsTests
         File.WriteAllText(Path.Combine(iconsFolder, "image.png"), "fake png content");
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -242,7 +241,7 @@ public class DiagnosticsTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
-            Assert.That(result.Diagnostics[0].Id, Is.EqualTo("ICON003"));
+            Assert.That(result.Diagnostics[0].Id, Is.EqualTo("ICON001"));
             Assert.That(result.Diagnostics[0].GetMessage(CultureInfo.InvariantCulture), Does.Contain("No SVG files found"));
         }
     }

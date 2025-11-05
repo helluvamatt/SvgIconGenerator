@@ -16,8 +16,9 @@ public class IconGenerator : IIncrementalGenerator
             ctx.AddSource(InjectedSource.IconDto.Hint, InjectedSource.IconDto.Source);
         });
 
-        IncrementalValueProvider<string?> projectDirectory = context.AnalyzerConfigOptionsProvider
-            .Select(static (ctx, _) => ctx.GlobalOptions.TryGetValue("build_property.MSBuildProjectDirectory", out string? info) ? info : null);
+        // Get all additional files (SVG files should be added via <AdditionalFiles Include="..." />)
+        IncrementalValuesProvider<AdditionalText> svgFiles = context.AdditionalTextsProvider
+            .Where(static file => file.Path.EndsWith(".svg", StringComparison.OrdinalIgnoreCase));
 
         // Find all classes with [GenerateIcons] attribute
         IncrementalValuesProvider<ClassInfo> classDeclarations = context.SyntaxProvider
@@ -27,7 +28,7 @@ public class IconGenerator : IIncrementalGenerator
                 transform: static (ctx, _) => new ClassInfo(ctx.TargetSymbol, ctx.TargetNode.GetLocation(), ctx.Attributes));
 
         // Generate icon classes
-        IncrementalValueProvider<(string? Left, ImmutableArray<ClassInfo> Right)> combined = projectDirectory.Combine(classDeclarations.Collect());
+        IncrementalValueProvider<(ImmutableArray<AdditionalText> Left, ImmutableArray<ClassInfo> Right)> combined = svgFiles.Collect().Combine(classDeclarations.Collect());
         context.RegisterSourceOutput(combined, static (spc, source) => IconEmitter.Execute(source.Left, source.Right, spc));
     }
 

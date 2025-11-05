@@ -6,32 +6,16 @@ namespace SvgIconGenerator;
 
 internal static class Diagnostics
 {
-    public static readonly DiagnosticDescriptor MissingProjectDirectory = new(
-        "ICON001",
-        "Project directory not found",
-        "Project directory not found. Cannot resolve icon folder paths.",
-        "IconGenerator",
-        DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    public static readonly DiagnosticDescriptor MissingIconDirectory = new(
-        "ICON002",
-        "Missing icon directory",
-        "Icon directory not found: {0}",
-        "IconGenerator",
-        DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
     public static readonly DiagnosticDescriptor NoIconsFound = new(
-        "ICON003",
+        "ICON001",
         "No icons found",
-        "No SVG files found in folder: {0}",
+        "No SVG files found matching pattern: {0}. Ensure SVG files are added as AdditionalFiles in your .csproj file.",
         "IconGenerator",
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor ErrorGeneratingIcons = new(
-        "ICON004",
+        "ICON002",
         "Error generating icons",
         "Error generating icons for {0}: {1}",
         "IconGenerator",
@@ -39,7 +23,7 @@ internal static class Diagnostics
         isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor SvgParseError = new(
-        "ICON005",
+        "ICON003",
         "Error parsing SVG",
         "Error parsing SVG file {0}: {1}",
         "IconGenerator",

@@ -33,16 +33,16 @@ public class IconGeneratorTests
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -66,16 +66,16 @@ public class IconGeneratorTests
         File.WriteAllText(Path.Combine(iconsFolder, "icon-settings.svg"), TestSvgFiles.ComplexIcon);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -95,16 +95,16 @@ public class IconGeneratorTests
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public static class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public static class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -125,16 +125,16 @@ public class IconGeneratorTests
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
 
         string sourceCode =
-            $$"""
-              using SvgIconGenerator;
+            """
+            using SvgIconGenerator;
 
-              namespace TestNamespace;
+            namespace TestNamespace;
 
-              [GenerateIcons("{{iconsFolder}}")]
-              public partial class Icons
-              {
-              }
-              """;
+            [GenerateIcons]
+            public partial class Icons
+            {
+            }
+            """;
 
         // Act
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
@@ -182,7 +182,7 @@ public class IconGeneratorTests
 
             namespace TestNamespace;
 
-            [GenerateIcons("icons")]
+            [GenerateIcons]
             public static partial class Icons
             {
             }

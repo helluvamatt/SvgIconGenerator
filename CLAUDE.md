@@ -31,10 +31,11 @@ dotnet clean
 The generator follows the incremental generator pattern:
 
 1. **Post-initialization** (`IconGenerator.cs:13-17`): Injects `GenerateIconsAttribute` and `IconDto` into the consuming project
-2. **Syntax filtering** (`IconGenerator.cs:19-24`): Finds `static partial` classes with `[GenerateIcons]` attribute
-3. **Source generation** (`IconEmitter.cs:17-45`): For each marked class:
-   - Resolves project directory from compilation
-   - Scans specified folder for SVG files
+2. **Additional files** (`IconGenerator.cs:19-21`): Gets all SVG files from `AdditionalFiles` in the project
+3. **Syntax filtering** (`IconGenerator.cs:23-28`): Finds `static partial` classes with `[GenerateIcons]` attribute
+4. **Source generation** (`IconEmitter.cs:21-54`): For each marked class:
+   - Extracts optional glob pattern from attribute
+   - Filters SVG files by glob pattern (if specified)
    - Parses SVG attributes and inner content
    - Generates partial class with `IconDto` properties
 
@@ -42,8 +43,9 @@ The generator follows the incremental generator pattern:
 
 **IconGenerator** (`IconGenerator.cs`)
 - Entry point implementing `IIncrementalGenerator`
+- Uses `AdditionalFilesProvider` to get SVG files (ensures incremental compilation tracking)
 - Filters for `static partial` classes with `[GenerateIcons]` attribute
-- Extracts folder path from attribute constructor argument
+- Extracts optional glob pattern from attribute constructor argument
 
 **IconEmitter** (`IconEmitter.cs`)
 - Generates partial class source code
@@ -51,7 +53,8 @@ The generator follows the incremental generator pattern:
 - Handles escaping of SVG content for C# string literals
 
 **SvgUtils** (`SvgUtils.cs`)
-- Loads SVG files from specified directory (non-recursive)
+- Loads SVG files from `AdditionalText` collection
+- Filters files by glob pattern (supports `*` and `**` wildcards)
 - Parses SVG XML to extract attributes and inner content
 - Excludes `xmlns` and `class` attributes from default attributes
 - Converts kebab-case filenames to PascalCase property names
@@ -84,14 +87,35 @@ The project uses MSBuild Directory.Build.props files for shared configuration:
 
 ### Usage Pattern
 
-Consuming projects apply `[GenerateIcons("path/to/icons")]` to a `static partial` class. The generator:
-1. Scans the folder for `*.svg` files
-2. Parses each SVG's root attributes and inner content
-3. Generates properties like `public static readonly IconDto PropertyName = new(...)`
-4. Property names are PascalCase conversions of kebab-case filenames
+Consuming projects must:
+1. Add SVG files as `AdditionalFiles` in their `.csproj`:
+   ```xml
+   <ItemGroup>
+     <AdditionalFiles Include="node_modules/lucide-static/icons/*.svg" />
+   </ItemGroup>
+   ```
+2. Apply `[GenerateIcons()]` or `[GenerateIcons("pattern")]` to a `static partial` class:
+   ```csharp
+   // Include all SVG files
+   [GenerateIcons]
+   public static partial class Icons { }
+
+   // Filter by glob pattern
+   [GenerateIcons("node_modules/lucide-static/icons/*.svg")]
+   public static partial class LucideIcons { }
+   ```
+
+The generator:
+1. Gets all SVG files from `AdditionalFiles`
+2. Filters by glob pattern if specified (supports `*` and `**`)
+3. Parses each SVG's root attributes and inner content
+4. Generates properties like `public static readonly IconDto PropertyName = new(...)`
+5. Property names are PascalCase conversions of kebab-case filenames
+
+**Important**: Using `AdditionalFiles` ensures that changes to SVG files trigger regeneration, unlike direct file I/O which bypasses incremental compilation tracking.
 
 ### Diagnostics
 
-- **ICON001**: No SVG files found in specified folder
+- **ICON001**: No SVG files found matching pattern (ensure SVG files are added as `AdditionalFiles`)
 - **ICON002**: Exception during icon generation for a class
 - **ICON003**: Exception parsing individual SVG file
