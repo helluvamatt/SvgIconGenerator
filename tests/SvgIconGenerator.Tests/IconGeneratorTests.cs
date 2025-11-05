@@ -32,7 +32,7 @@ public class IconGeneratorTests
         Directory.CreateDirectory(iconsFolder);
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -48,12 +48,15 @@ public class IconGeneratorTests
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
 
         // Assert
-        Assert.That(result.GeneratedSources, Has.Count.GreaterThan(0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.GeneratedSources, Has.Count.GreaterThan(0));
 
-        string generatedCode = string.Join("\n", result.GeneratedSources);
-        Assert.That(generatedCode, Does.Contain("partial class Icons"));
-        Assert.That(generatedCode, Does.Contain("IconHome"));
-        Assert.That(generatedCode, Does.Contain("IconDto"));
+            string generatedCode = string.Join("\n", result.GeneratedSources);
+            Assert.That(generatedCode, Does.Contain("partial class Icons"));
+            Assert.That(generatedCode, Does.Contain("IconHome"));
+            Assert.That(generatedCode, Does.Contain("IconDto"));
+        }
     }
 
     [Test]
@@ -65,7 +68,7 @@ public class IconGeneratorTests
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
         File.WriteAllText(Path.Combine(iconsFolder, "icon-settings.svg"), TestSvgFiles.ComplexIcon);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -81,9 +84,12 @@ public class IconGeneratorTests
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
 
         // Assert
-        string generatedCode = string.Join("\n", result.GeneratedSources);
-        Assert.That(generatedCode, Does.Contain("IconHome"));
-        Assert.That(generatedCode, Does.Contain("IconSettings"));
+        using (Assert.EnterMultipleScope())
+        {
+            string generatedCode = string.Join("\n", result.GeneratedSources);
+            Assert.That(generatedCode, Does.Contain("IconHome"));
+            Assert.That(generatedCode, Does.Contain("IconSettings"));
+        }
     }
 
     [Test]
@@ -94,7 +100,7 @@ public class IconGeneratorTests
         Directory.CreateDirectory(iconsFolder);
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -124,7 +130,7 @@ public class IconGeneratorTests
         Directory.CreateDirectory(iconsFolder);
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -163,9 +169,12 @@ public class IconGeneratorTests
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
 
         // Assert
-        string generatedCode = string.Join("\n", result.GeneratedSources);
-        Assert.That(generatedCode, Does.Contain("GenerateIconsAttribute"));
-        Assert.That(generatedCode, Does.Contain("IconDto"));
+        using (Assert.EnterMultipleScope())
+        {
+            string generatedCode = string.Join("\n", result.GeneratedSources);
+            Assert.That(generatedCode, Does.Contain("GenerateIconsAttribute"));
+            Assert.That(generatedCode, Does.Contain("IconDto"));
+        }
     }
 
     [Test]
@@ -192,9 +201,12 @@ public class IconGeneratorTests
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
 
         // Assert
-        Assert.That(result.Diagnostics, Is.Empty, "Expected no diagnostics from the generator.");
-        string generatedCode = string.Join("\n", result.GeneratedSources);
-        Assert.That(generatedCode, Does.Contain("IconHome"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Diagnostics, Is.Empty, "Expected no diagnostics from the generator.");
+            string generatedCode = string.Join("\n", result.GeneratedSources);
+            Assert.That(generatedCode, Does.Contain("IconHome"));
+        }
     }
 
     [Test]

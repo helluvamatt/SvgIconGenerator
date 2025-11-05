@@ -32,7 +32,7 @@ public class SnapshotTests
         Directory.CreateDirectory(iconsFolder);
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -48,20 +48,23 @@ public class SnapshotTests
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
 
         // Assert
-        Assert.That(result.Diagnostics, Is.Empty, "Expected no diagnostics from the generator.");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Diagnostics, Is.Empty, "Expected no diagnostics from the generator.");
 
-        string? generatedCode = result.GeneratedSources
-            .FirstOrDefault(s => s.Contains("partial class Icons", StringComparison.Ordinal));
-        Assert.That(generatedCode, Is.Not.Null);
+            string? generatedCode = result.GeneratedSources
+                .FirstOrDefault(s => s.Contains("partial class Icons", StringComparison.Ordinal));
+            Assert.That(generatedCode, Is.Not.Null);
 
-        Assert.That(generatedCode, Does.Contain("namespace TestNamespace"));
-        Assert.That(generatedCode, Does.Contain("partial class Icons"));
-        Assert.That(generatedCode, Does.Contain("IconHome"));
-        Assert.That(generatedCode, Does.Contain("\"icon-home\""));
-        Assert.That(generatedCode, Does.Contain("{ \"width\", \"24\" }"));
-        Assert.That(generatedCode, Does.Contain("{ \"height\", \"24\" }"));
-        Assert.That(generatedCode, Does.Contain("{ \"viewBox\", \"0 0 24 24\" }"));
-        Assert.That(generatedCode, Does.Contain("<circle"));
+            Assert.That(generatedCode, Does.Contain("namespace TestNamespace"));
+            Assert.That(generatedCode, Does.Contain("partial class Icons"));
+            Assert.That(generatedCode, Does.Contain("IconHome"));
+            Assert.That(generatedCode, Does.Contain("\"icon-home\""));
+            Assert.That(generatedCode, Does.Contain("{ \"width\", \"24\" }"));
+            Assert.That(generatedCode, Does.Contain("{ \"height\", \"24\" }"));
+            Assert.That(generatedCode, Does.Contain("{ \"viewBox\", \"0 0 24 24\" }"));
+            Assert.That(generatedCode, Does.Contain("<circle"));
+        }
     }
 
     [Test]
@@ -73,7 +76,7 @@ public class SnapshotTests
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
         File.WriteAllText(Path.Combine(iconsFolder, "icon-settings.svg"), TestSvgFiles.ComplexIcon);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -93,19 +96,23 @@ public class SnapshotTests
             .FirstOrDefault(s => s.Contains("partial class AppIcons", StringComparison.Ordinal));
 
         Assert.That(generatedCode, Is.Not.Null);
-        Assert.That(generatedCode, Does.Contain("namespace MyApp.Icons"));
-        Assert.That(generatedCode, Does.Contain("partial class AppIcons"));
 
-        // Both icons should be present
-        Assert.That(generatedCode, Does.Contain("IconHome"));
-        Assert.That(generatedCode, Does.Contain("IconSettings"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(generatedCode, Does.Contain("namespace MyApp.Icons"));
+            Assert.That(generatedCode, Does.Contain("partial class AppIcons"));
 
-        // Both should be readonly IconDto properties
-        int iconHomeCount = System.Text.RegularExpressions.Regex.Matches(generatedCode, "IconHome").Count;
-        int iconSettingsCount = System.Text.RegularExpressions.Regex.Matches(generatedCode, "IconSettings").Count;
+            // Both icons should be present
+            Assert.That(generatedCode, Does.Contain("IconHome"));
+            Assert.That(generatedCode, Does.Contain("IconSettings"));
 
-        Assert.That(iconHomeCount, Is.GreaterThanOrEqualTo(1));
-        Assert.That(iconSettingsCount, Is.GreaterThanOrEqualTo(1));
+            // Both should be readonly IconDto properties
+            int iconHomeCount = System.Text.RegularExpressions.Regex.Matches(generatedCode, "IconHome").Count;
+            int iconSettingsCount = System.Text.RegularExpressions.Regex.Matches(generatedCode, "IconSettings").Count;
+
+            Assert.That(iconHomeCount, Is.GreaterThanOrEqualTo(1));
+            Assert.That(iconSettingsCount, Is.GreaterThanOrEqualTo(1));
+        }
     }
 
     [Test]
@@ -125,7 +132,7 @@ public class SnapshotTests
 
         File.WriteAllText(Path.Combine(iconsFolder, "test.svg"), svgWithQuotes);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -158,7 +165,7 @@ public class SnapshotTests
         Directory.CreateDirectory(iconsFolder);
         File.WriteAllText(Path.Combine(iconsFolder, "arrow-down-0-1.svg"), TestSvgFiles.SimpleIcon);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -174,12 +181,15 @@ public class SnapshotTests
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
 
         // Assert
-        string? generatedCode = result.GeneratedSources
-            .FirstOrDefault(s => s.Contains("partial class Icons", StringComparison.Ordinal));
+        using (Assert.EnterMultipleScope())
+        {
+            string? generatedCode = result.GeneratedSources
+                .FirstOrDefault(s => s.Contains("partial class Icons", StringComparison.Ordinal));
 
-        Assert.That(generatedCode, Is.Not.Null);
-        Assert.That(generatedCode, Does.Contain("ArrowDown0_1"));
-        Assert.That(generatedCode, Does.Contain("\"arrow-down-0-1\""));
+            Assert.That(generatedCode, Is.Not.Null);
+            Assert.That(generatedCode, Does.Contain("ArrowDown0_1"));
+            Assert.That(generatedCode, Does.Contain("\"arrow-down-0-1\""));
+        }
     }
 
     [Test]
@@ -190,7 +200,7 @@ public class SnapshotTests
         Directory.CreateDirectory(iconsFolder);
         File.WriteAllText(Path.Combine(iconsFolder, "test.svg"), TestSvgFiles.IconWithClassAttribute);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -206,32 +216,37 @@ public class SnapshotTests
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
 
         // Assert
-        Assert.That(result.Diagnostics, Is.Empty, "Expected no diagnostics from the generator.");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Diagnostics, Is.Empty, "Expected no diagnostics from the generator.");
 
-        string? generatedCode = result.GeneratedSources
-            .FirstOrDefault(s => s.Contains("partial class Icons", StringComparison.Ordinal));
-        Assert.That(generatedCode, Is.Not.Null);
+            string? generatedCode = result.GeneratedSources
+                .FirstOrDefault(s => s.Contains("partial class Icons", StringComparison.Ordinal));
+            Assert.That(generatedCode, Is.Not.Null);
 
-        // Should contain width, height, viewBox
-        Assert.That(generatedCode, Does.Contain("{ \"width\", \"24\" }"));
-        Assert.That(generatedCode, Does.Contain("{ \"height\", \"24\" }"));
-        Assert.That(generatedCode, Does.Contain("{ \"viewBox\", \"0 0 24 24\" }"));
+            // Should contain width, height, viewBox
+            Assert.That(generatedCode, Does.Contain("{ \"width\", \"24\" }"));
+            Assert.That(generatedCode, Does.Contain("{ \"height\", \"24\" }"));
+            Assert.That(generatedCode, Does.Contain("{ \"viewBox\", \"0 0 24 24\" }"));
 
-        // Should NOT contain xmlns or class in default attributes
-        // Note: xmlns might appear in InnerContent, but not in DefaultAttributes
-        string defaultAttributesSection = ExtractDefaultAttributesSection(generatedCode!);
-        Assert.That(defaultAttributesSection, Does.Not.Contain("xmlns"));
-        Assert.That(defaultAttributesSection, Does.Not.Contain("class"));
+            // Should NOT contain xmlns or class in default attributes
+            // Note: xmlns might appear in InnerContent, but not in DefaultAttributes
+            string defaultAttributesSection = ExtractDefaultAttributesSection(generatedCode!);
+            Assert.That(defaultAttributesSection, Does.Not.Contain("xmlns"));
+            Assert.That(defaultAttributesSection, Does.Not.Contain("class"));
+        }
     }
 
     private static string ExtractDefaultAttributesSection(string generatedCode)
     {
-        int startIndex = generatedCode.IndexOf("DefaultAttributes:", StringComparison.Ordinal);
-        if (startIndex == -1) return string.Empty;
+        string[] lines = generatedCode.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        int endIndex = generatedCode.IndexOf("InnerContent:", startIndex, StringComparison.Ordinal);
-        if (endIndex == -1) return string.Empty;
+        int startLine = Array.FindIndex(lines, l => string.Equals(l, "new global::System.Collections.Generic.Dictionary<string, string> {", StringComparison.Ordinal));
+        if (startLine == -1) throw new InvalidOperationException("Could not find the start of DefaultAttributes section.");
 
-        return generatedCode.Substring(startIndex, endIndex - startIndex);
+        int endLine = Array.FindIndex(lines, startLine, l => string.Equals(l, "},", StringComparison.Ordinal));
+        if (endLine == -1) throw new InvalidOperationException("Could not find the end of DefaultAttributes section.");
+
+        return string.Join('\n', lines[startLine..endLine]);
     }
 }

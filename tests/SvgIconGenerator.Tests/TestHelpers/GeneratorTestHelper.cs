@@ -111,7 +111,7 @@ public sealed class TestAdditionalText : AdditionalText
 
     public override string Path { get; }
 
-    public override SourceText? GetText(CancellationToken cancellationToken = default) => sourceText;
+    public override SourceText GetText(CancellationToken cancellationToken = default) => sourceText;
 }
 
 /// <summary>

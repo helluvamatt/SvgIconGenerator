@@ -13,7 +13,7 @@ public class StringUtilsTests
     [TestCase("multi-word-name", "MultiWordName")]
     public void ConvertToPascalCase_SimpleKebabCase_ReturnsCorrectPascalCase(string input, string expected)
     {
-        var result = StringUtils.ConvertToPascalCase(input);
+        string result = StringUtils.ConvertToPascalCase(input);
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -23,7 +23,7 @@ public class StringUtilsTests
     [TestCase("test-5-end", "Test5_end")]
     public void ConvertToPascalCase_DigitsAfterHyphen_UsesUnderscore(string input, string expected)
     {
-        var result = StringUtils.ConvertToPascalCase(input);
+        string result = StringUtils.ConvertToPascalCase(input);
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -33,7 +33,7 @@ public class StringUtilsTests
     [TestCase("test-123abc", "Test123abc")]
     public void ConvertToPascalCase_DigitsFollowedByLetters_NoUnderscore(string input, string expected)
     {
-        var result = StringUtils.ConvertToPascalCase(input);
+        string result = StringUtils.ConvertToPascalCase(input);
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -43,7 +43,7 @@ public class StringUtilsTests
     [TestCase("abc", "Abc")]
     public void ConvertToPascalCase_EdgeCases_HandlesCorrectly(string input, string expected)
     {
-        var result = StringUtils.ConvertToPascalCase(input);
+        string result = StringUtils.ConvertToPascalCase(input);
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -53,7 +53,7 @@ public class StringUtilsTests
     [TestCase("123-456", "123_456")]
     public void ConvertToPascalCase_OnlyDigits_HandlesCorrectly(string input, string expected)
     {
-        var result = StringUtils.ConvertToPascalCase(input);
+        string result = StringUtils.ConvertToPascalCase(input);
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -62,7 +62,7 @@ public class StringUtilsTests
     [TestCase("MiXeD-CaSe", "MiXeDCaSe")]
     public void ConvertToPascalCase_UppercaseInput_PreservesCase(string input, string expected)
     {
-        var result = StringUtils.ConvertToPascalCase(input);
+        string result = StringUtils.ConvertToPascalCase(input);
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -73,7 +73,7 @@ public class StringUtilsTests
     [TestCase("icon--home", "IconHome")]
     public void ConvertToPascalCase_TrailingOrLeadingHyphens_HandlesCorrectly(string input, string expected)
     {
-        var result = StringUtils.ConvertToPascalCase(input);
+        string result = StringUtils.ConvertToPascalCase(input);
         Assert.That(result, Is.EqualTo(expected));
     }
 }

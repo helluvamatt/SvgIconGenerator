@@ -33,7 +33,7 @@ public class DiagnosticsTests
         string emptyIconsFolder = Path.Combine(testDirectory, "empty-icons");
         Directory.CreateDirectory(emptyIconsFolder);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -62,9 +62,7 @@ public class DiagnosticsTests
     public void ICON001_NonExistentFolder_ReportsWarning()
     {
         // Arrange
-        string nonExistentFolder = Path.Combine(testDirectory, "does-not-exist");
-
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -96,7 +94,7 @@ public class DiagnosticsTests
         Directory.CreateDirectory(iconsFolder);
         File.WriteAllText(Path.Combine(iconsFolder, "invalid.svg"), TestSvgFiles.InvalidSvg);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -128,7 +126,7 @@ public class DiagnosticsTests
         File.WriteAllText(Path.Combine(iconsFolder, "valid.svg"), TestSvgFiles.SimpleIcon);
         File.WriteAllText(Path.Combine(iconsFolder, "invalid.svg"), TestSvgFiles.InvalidSvg);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -144,15 +142,18 @@ public class DiagnosticsTests
         GeneratorTestResult result = GeneratorTestHelper.RunGenerator(sourceCode, testDirectory);
 
         // Assert
-        Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
-        Assert.That(result.Diagnostics[0].Id, Is.EqualTo("ICON003"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Id, Is.EqualTo("ICON003"));
 
-        // Valid icon should still be generated
-        string? generatedCode = result.GeneratedSources
-            .FirstOrDefault(s => s.Contains("partial class Icons", StringComparison.Ordinal));
+            // Valid icon should still be generated
+            string? generatedCode = result.GeneratedSources
+                .FirstOrDefault(s => s.Contains("partial class Icons", StringComparison.Ordinal));
 
-        Assert.That(generatedCode, Is.Not.Null);
-        Assert.That(generatedCode, Does.Contain("Valid"));
+            Assert.That(generatedCode, Is.Not.Null);
+            Assert.That(generatedCode, Does.Contain("Valid"));
+        }
     }
 
     [Test]
@@ -163,7 +164,7 @@ public class DiagnosticsTests
         Directory.CreateDirectory(iconsFolder);
         File.WriteAllText(Path.Combine(iconsFolder, "icon-home.svg"), TestSvgFiles.SimpleIcon);
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -190,7 +191,7 @@ public class DiagnosticsTests
         Directory.CreateDirectory(iconsFolder);
         File.WriteAllText(Path.Combine(iconsFolder, "corrupted.svg"), "This is not valid XML at all!");
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
@@ -222,7 +223,7 @@ public class DiagnosticsTests
         File.WriteAllText(Path.Combine(iconsFolder, "readme.txt"), "This is a text file");
         File.WriteAllText(Path.Combine(iconsFolder, "image.png"), "fake png content");
 
-        string sourceCode =
+        const string sourceCode =
             """
             using SvgIconGenerator;
 
